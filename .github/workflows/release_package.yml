@@ -2,7 +2,7 @@ name: Publish Python Package
 
 on:
   workflow_run:
-    workflows: ["Build Package"]
+    workflows: ["Build Python Package"]
     types:
       - completed
     branches: [main]
