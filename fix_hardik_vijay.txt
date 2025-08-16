@@ -1,0 +1,31 @@
+Issue 1: 
+  -> Missing "name" in [project] field of "pyproject.toml" file. 
+  -> The name should be exact as mentioned in "PACKAGE_NAME:" of promote_package.yml file.
+
+Issue 2:
+  -> Missing "version" in [project] field of "pyproject.toml" file. 
+  -> The desired version
+
+Issue 3:
+  -> Missing Build step in "build_package.yml" file.
+  -> Added "run: python -m build"
+
+Issue 4:
+  -> Incorrect tag for "CLOUDSMITH_STAGING_REPO: 'production'" in promote_package.yml file.
+  -> Added correct tag for "CLOUDSMITH_STAGING_REPO: 'staging'".
+
+Issue 5:
+  -> Incorrect tag for "CLOUDSMITH_PRODUCTION_REPO: 'staging'" in promote_package.yml file.
+  -> Added correct tag for "CLOUDSMITH_PRODUCTION_REPO: 'production'".
+
+Issue 6:
+  -> Missing Error Handling for JSON Parsing in promote_package.yml file. 
+  -> Added validation and better error handling.
+
+Issue 7:
+  -> Missing Cloudsmith CLI installation step in release_package.yml file.
+  -> Added proper installation step as per documentation using OIDC.
+
+Issue 8:
+  -> Missing required permission for OIDC authentication with Cloudsmith in release_package.yml file.
+  -> Added "id-token: write" permission.
