@@ -37,8 +37,14 @@ jobs:
           
           PACKAGE_DATA=$(cloudsmith list package ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_STAGING_REPO }} -q "$PACKAGE_QUERY" -F json)
           
+          if [ -z "$PACKAGE_DATA" ] || [ "$PACKAGE_DATA" = "null" ]; then 
+            echo "No package data returned from query"
+            exit 1
+          fi
+
+          IDENTIFIER=$(echo "$PACKAGE_DATA" | jq -r '.data[0].identifier_perm // empty')
           # Extract the identifier_perm using jq
-          IDENTIFIER=$(echo "$PACKAGE_DATA" | jq -r '.data[0].identifier_perm')
+          # IDENTIFIER=$(echo "$PACKAGE_DATA" | jq -r '.data[0].identifier_perm')
           
           if [ -z "$IDENTIFIER" ] || [ "$IDENTIFIER" = "null" ]; then
             echo "Failed to find package identifier"
