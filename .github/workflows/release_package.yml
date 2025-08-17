@@ -43,6 +43,7 @@ jobs:
           echo "Testing Cloudsmith authentication..."
           cloudsmith whoami
           echo "Listing repositories..."
+          cloudsmith list repo ${{ env.CLOUDSMITH_NAMESPACE }}
           
       - name: List directory contents
         run: ls -la dist/
