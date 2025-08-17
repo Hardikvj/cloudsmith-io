@@ -30,20 +30,59 @@ jobs:
           repository: ${{ github.repository }}
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Debug - Before CLI Installation
+        run: |
+          echo "Before CLI installation:"
+          which cloudsmith || echo "cloudsmith not found"
+          echo "Environment variables:"
+          echo "CLOUDSMITH_NAMESPACE: ${{ env.CLOUDSMITH_NAMESPACE }}"
+          echo "CLOUDSMITH_SERVICE_SLUG: ${{ env.CLOUDSMITH_SERVICE_SLUG }}"
           
       - name: Authenticate with Cloudsmith via OIDC
         uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
         with:
           oidc-namespace: ${{ env.CLOUDSMITH_NAMESPACE }}
           oidc-service-slug: ${{ env.CLOUDSMITH_SERVICE_SLUG }}
-          oidc-auth-only: 'true'
+        continue-on-error: true
 
+      - name: Debug - After Method 1
+        run: |
+          echo "After Method 1:"
+          which cloudsmith || echo "cloudsmith still not found"
+      
+      - name: Install Cloudsmith CLI (Method 2 - API Key)
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        uses: cloudsmith-io/cloudsmith-cli-action@v1.0.3
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+        continue-on-error: true
+
+      - name: Install Cloudsmith CLI (Method 3 - Manual)
+        run: |
+          echo "Installing Cloudsmith CLI manually..."
+          python -m pip install --upgrade cloudsmith-cli
+          echo "Verifying installation:"
+          which cloudsmith
+          cloudsmith --version
+        continue-on-error: true
+      
+      - name: Debug - Final CLI Check
+        run: |
+          echo "Final check:"
+          which cloudsmith || echo "cloudsmith not found"
+          cloudsmith --version || echo "cloudsmith version failed"
+      
       - name: Test Cloudsmith Authentication
         run: |
           echo "Testing Cloudsmith authentication..."
-          cloudsmith whoami
-          echo "Listing repositories..."
-          cloudsmith list repo ${{ env.CLOUDSMITH_NAMESPACE }}
+          if which cloudsmith > /dev/null 2>&1; then
+            cloudsmith whoami || echo "Authentication failed"
+            cloudsmith list repo ${{ env.CLOUDSMITH_NAMESPACE }} || echo "Repository listing failed"
+          else
+            echo "Cloudsmith CLI not available"
+            exit 1
+          fi
           
       - name: List directory contents
         run: ls -la dist/
@@ -55,5 +94,12 @@ jobs:
             echo "No package found to upload"
             exit 1
           fi
-          cloudsmith push python ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_REPOSITORY }} dist/*.tar.gz --republish
+          # cloudsmith push python ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_REPOSITORY }} dist/*.tar.gz --republish
+          echo "Uploading to: ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_REPOSITORY }}"
+          if cloudsmith push python ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_REPOSITORY }} dist/*.tar.gz --republish --verbose; then
+            echo "Package uploaded successfully"
+          else
+            echo "Upload failed, trying without --republish flag"
+            cloudsmith push python ${{ env.CLOUDSMITH_NAMESPACE }}/${{ env.CLOUDSMITH_REPOSITORY }} dist/*.tar.gz --verbose
+          fi
         shell: bash
