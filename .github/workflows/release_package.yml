@@ -37,6 +37,12 @@ jobs:
           oidc-namespace: ${{ env.CLOUDSMITH_NAMESPACE }}
           oidc-service-slug: ${{ env.CLOUDSMITH_SERVICE_SLUG }}
           oidc-auth-only: 'true'
+
+      - name: Test Cloudsmith Authentication
+        run: |
+          echo "Testing Cloudsmith authentication..."
+          cloudsmith whoami
+          echo "Listing repositories..."
           
       - name: List directory contents
         run: ls -la dist/
