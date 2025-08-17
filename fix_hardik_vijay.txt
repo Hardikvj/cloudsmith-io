@@ -28,4 +28,4 @@ Issue 7:
 
 Issue 8:
   -> Missing required permission for OIDC authentication with Cloudsmith in release_package.yml file.
-  -> Added "id-token: write" permission..
+  -> Added "id-token: write" permission.
